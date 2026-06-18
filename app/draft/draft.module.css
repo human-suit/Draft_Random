@@ -1,0 +1,19 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.header p {
+  color: #adb5bd;
+  margin-top: 0.35rem;
+}
+
+.link {
+  color: #52b788;
+  text-decoration: underline;
+}

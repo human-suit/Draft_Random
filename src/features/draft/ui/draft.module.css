@@ -1,0 +1,141 @@
+.draft {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.soloHint {
+  padding: 0.75rem 1rem;
+  background: rgba(64, 145, 108, 0.15);
+  border: 1px solid rgba(82, 183, 136, 0.35);
+  border-radius: 8px;
+  color: #52b788;
+  font-size: 0.9rem;
+}
+
+.soloToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.soloBadge {
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  border-radius: 6px;
+  color: #ffc107;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.resetBtn {
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.resetBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.winrateBar {
+  position: relative;
+  height: 36px;
+  background: #3d1515;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.radiantBar {
+  height: 100%;
+  background: linear-gradient(90deg, #2d6a4f, #40916c);
+  transition: width 0.3s ease;
+}
+
+.radiantLabel,
+.direLabel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.radiantLabel {
+  left: 12px;
+}
+
+.direLabel {
+  right: 12px;
+}
+
+.phaseInfo h2 {
+  font-size: 1.25rem;
+}
+
+.yourTurn {
+  color: #52b788;
+}
+
+.waitTurn {
+  color: #adb5bd;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.pickList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pickList li {
+  padding: 0.4rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.heroGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.heroBtn {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.heroBtn:hover:not(:disabled) {
+  background: rgba(82, 183, 136, 0.2);
+  border-color: #52b788;
+}
+
+.heroBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
