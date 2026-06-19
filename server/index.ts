@@ -85,6 +85,7 @@ function withCallback<T>(
 
 io.on("connection", (socket) => {
   socket.emit("lobby:updated", roomStore.listPublicRooms());
+  socket.emit("lobby:chat:history", roomStore.getLobbyChatMessages());
 
   socket.on("room:create", (...args) => {
     withCallback<{
@@ -377,6 +378,31 @@ io.on("connection", (socket) => {
         callback({ ok: false, error: "Комната не найдена" });
       }
     });
+  });
+
+  socket.on("lobby:chat:sync", (...args) => {
+    withCallback(args, (_data, callback) => {
+      callback({ ok: true, messages: roomStore.getLobbyChatMessages() });
+    });
+  });
+
+  socket.on("lobby:chat:send", (...args) => {
+    withCallback<{ playerId: string; playerName: string; text: string }>(
+      args,
+      (data, callback) => {
+        try {
+          const message = roomStore.addLobbyChatMessage(
+            data.playerId,
+            data.playerName,
+            data.text,
+          );
+          io.emit("lobby:chat:message", message);
+          callback({ ok: true, message });
+        } catch (e) {
+          callback({ ok: false, error: (e as Error).message });
+        }
+      },
+    );
   });
 
   socket.on("room:chat:send", (...args) => {

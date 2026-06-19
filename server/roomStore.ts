@@ -7,6 +7,7 @@ import {
   ChatMessage,
   DEFAULT_ROOM_SETTINGS,
   EMPTY_SCORE,
+  LOBBY_CHAT_ROOM_ID,
   Player,
   PlayerRole,
   Room,
@@ -105,6 +106,8 @@ class RoomStore {
   private rooms = new Map<string, Room>();
   private codeToId = new Map<string, string>();
   private chatMessages = new Map<string, ChatMessage[]>();
+  private lobbyChat: ChatMessage[] = [];
+  private readonly lobbyChatLimit = 150;
 
   getRoom(id: string): Room | undefined {
     return this.rooms.get(id);
@@ -586,6 +589,37 @@ class RoomStore {
       messages.splice(0, messages.length - 100);
     }
     this.chatMessages.set(roomId, messages);
+    return message;
+  }
+
+  getLobbyChatMessages(): ChatMessage[] {
+    return this.lobbyChat;
+  }
+
+  addLobbyChatMessage(
+    playerId: string,
+    playerName: string,
+    text: string,
+  ): ChatMessage {
+    const trimmed = text.trim();
+    if (!trimmed) throw new Error("Пустое сообщение");
+    if (trimmed.length > 400) {
+      throw new Error("Сообщение слишком длинное");
+    }
+
+    const name = playerName.trim();
+    if (!name) throw new Error("Укажите имя");
+
+    const message: ChatMessage = {
+      id: crypto.randomUUID(),
+      roomId: LOBBY_CHAT_ROOM_ID,
+      playerId,
+      playerName: name.slice(0, 24),
+      text: trimmed,
+      createdAt: Date.now(),
+    };
+
+    this.lobbyChat = [...this.lobbyChat, message].slice(-this.lobbyChatLimit);
     return message;
   }
 

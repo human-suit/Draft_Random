@@ -7,6 +7,7 @@ import { useRoomSocket } from "@features/room/lib/useRoomSocket";
 import { usePlayerIdentity } from "@features/room/lib/usePlayerIdentity";
 import { getStatusLabel } from "@features/room/lib/roomLabels";
 import { useLoadingOverlay } from "@shared/ui/LoadingProvider";
+import RoomChat from "@features/room/ui/RoomChat";
 import styles from "@features/room/ui/room.module.css";
 
 export default function HomePageClient() {
@@ -23,6 +24,8 @@ export default function HomePageClient() {
     joinRoom,
     listRooms,
     clearError,
+    lobbyChatMessages,
+    sendLobbyChatMessage,
   } = useRoomSocket();
 
   const [name, setName] = useState("");
@@ -127,6 +130,14 @@ export default function HomePageClient() {
     }
   };
 
+  const handleLobbyChatSend = async (text: string) => {
+    const trimmed = ensureName();
+    if (!trimmed || !playerId) {
+      throw new Error("Укажите имя");
+    }
+    await sendLobbyChatMessage(playerId, trimmed, text);
+  };
+
   if (!ready) {
     return null;
   }
@@ -152,19 +163,31 @@ export default function HomePageClient() {
       )}
       {error && <div className={styles.errorBanner}>{error}</div>}
 
-      <section className={styles.card}>
-        <h2>Ваш профиль</h2>
-        <label className={styles.field}>
-          <span>Имя</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Введите ник"
-            maxLength={24}
-          />
-        </label>
-      </section>
+      <div className={styles.homeProfileRow}>
+        <section className={styles.card}>
+          <h2>Ваш профиль</h2>
+          <label className={styles.field}>
+            <span>Имя</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Введите ник"
+              maxLength={24}
+            />
+          </label>
+        </section>
+
+        <RoomChat
+          className={styles.homeLobbyChat}
+          title="Чат лобби"
+          messages={lobbyChatMessages}
+          currentPlayerId={playerId}
+          onSend={handleLobbyChatSend}
+          offline={!connected}
+          compact
+        />
+      </div>
 
       <section className={`${styles.card} ${styles.testCard}`}>
         <h2>Тестовый режим</h2>

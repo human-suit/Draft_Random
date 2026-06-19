@@ -66,6 +66,8 @@ export interface ChatMessage {
   createdAt: number;
 }
 
+export const LOBBY_CHAT_ROOM_ID = "__lobby__";
+
 export const EMPTY_SCORE: SeriesScore = { radiant: 0, dire: 0 };
 
 export interface Room {

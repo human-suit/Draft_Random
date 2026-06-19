@@ -10,6 +10,9 @@ interface Props {
   onSend: (text: string) => Promise<void>;
   isMuted?: boolean;
   compact?: boolean;
+  title?: string;
+  className?: string;
+  offline?: boolean;
 }
 
 function formatTime(timestamp: number): string {
@@ -25,6 +28,9 @@ export default function RoomChat({
   onSend,
   isMuted = false,
   compact = false,
+  title = "Чат",
+  className = "",
+  offline = false,
 }: Props) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -51,8 +57,10 @@ export default function RoomChat({
   };
 
   return (
-    <div className={`${styles.roomChat} ${compact ? styles.roomChatCompact : ""}`}>
-      <h3 className={styles.chatTitle}>Чат</h3>
+    <div
+      className={`${styles.roomChat} ${compact ? styles.roomChatCompact : ""} ${className}`}
+    >
+      <h3 className={styles.chatTitle}>{title}</h3>
       <div ref={listRef} className={styles.chatMessages}>
         {messages.length === 0 && (
           <p className={styles.muted}>Сообщений пока нет</p>
@@ -85,15 +93,19 @@ export default function RoomChat({
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={
-              isMuted ? "Вы не можете писать..." : "Написать сообщение..."
+              offline
+                ? "Сервер офлайн..."
+                : isMuted
+                  ? "Вы не можете писать..."
+                  : "Написать сообщение..."
             }
             maxLength={400}
-            disabled={sending || isMuted}
+            disabled={sending || isMuted || offline}
           />
           <button
             type="submit"
             className={styles.primaryBtn}
-            disabled={sending || isMuted || !text.trim()}
+            disabled={sending || isMuted || offline || !text.trim()}
           >
             {sending ? "..." : "→"}
           </button>

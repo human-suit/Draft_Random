@@ -55,12 +55,33 @@
 }
 
 .home {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.homeProfileRow {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.homeProfileRow .card {
+  padding: 1rem;
+}
+
+.homeProfileRow .card h2 {
+  font-size: 1rem;
+}
+
+.homeLobbyChat {
+  min-height: 320px;
+  max-height: none;
+  flex: 1;
 }
 
 .homeHeader {
@@ -743,6 +764,14 @@
 
   .home {
     padding: 1.25rem 1rem 3rem;
+  }
+
+  .homeProfileRow {
+    grid-template-columns: 1fr;
+  }
+
+  .homeLobbyChat {
+    min-height: 280px;
   }
 
   .homeHeader h1 {

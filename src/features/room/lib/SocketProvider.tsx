@@ -76,9 +76,15 @@ interface SocketContextValue {
     winner: import("@entities/room/model/types").WinnerTeam,
   ) => Promise<Room>;
   chatMessages: ChatMessage[];
+  lobbyChatMessages: ChatMessage[];
   sendChatMessage: (
     roomId: string,
     playerId: string,
+    text: string,
+  ) => Promise<void>;
+  sendLobbyChatMessage: (
+    playerId: string,
+    playerName: string,
     text: string,
   ) => Promise<void>;
   setChatMuted: (
@@ -110,6 +116,7 @@ export function SocketProvider({
   const [kicked, setKicked] = useState(false);
   const [roomClosed, setRoomClosed] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [lobbyChatMessages, setLobbyChatMessages] = useState<ChatMessage[]>([]);
 
   const trackRoom = useCallback((nextRoom: Room | null) => {
     activeRoomIdRef.current = nextRoom?.id ?? null;
@@ -145,7 +152,6 @@ export function SocketProvider({
     const socket = connectSocket(socketUrl);
     socketRef.current = socket;
 
-    const onConnect = () => setConnected(true);
     const onDisconnect = () => setConnected(false);
     const onConnectError = (err: Error) => {
       console.error("Socket connect error:", err.message);
@@ -177,26 +183,51 @@ export function SocketProvider({
         return [...prev, message];
       });
     };
+    const onLobbyChatHistory = (messages: ChatMessage[]) => {
+      setLobbyChatMessages(messages);
+    };
+    const onLobbyChatMessage = (message: ChatMessage) => {
+      setLobbyChatMessages((prev) => {
+        if (prev.some((item) => item.id === message.id)) return prev;
+        return [...prev, message];
+      });
+    };
+    const syncLobbyChat = () => {
+      socket.emit("lobby:chat:sync", (response: unknown) => {
+        const result = response as { ok?: boolean; messages?: ChatMessage[] };
+        if (result.ok && result.messages) {
+          setLobbyChatMessages(result.messages);
+        }
+      });
+    };
+    const onSocketConnect = () => {
+      setConnected(true);
+      syncLobbyChat();
+    };
 
-    socket.on("connect", onConnect);
+    socket.on("connect", onSocketConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
     socket.on("room:updated", onRoomUpdated);
     socket.on("lobby:updated", onLobbyUpdated);
+    socket.on("lobby:chat:history", onLobbyChatHistory);
+    socket.on("lobby:chat:message", onLobbyChatMessage);
     socket.on("room:closed", onRoomClosed);
     socket.on("room:kicked", onKicked);
     socket.on("room:chat:message", onChatMessage);
 
     if (socket.connected) {
-      setConnected(true);
+      onSocketConnect();
     }
 
     return () => {
-      socket.off("connect", onConnect);
+      socket.off("connect", onSocketConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
       socket.off("room:updated", onRoomUpdated);
       socket.off("lobby:updated", onLobbyUpdated);
+      socket.off("lobby:chat:history", onLobbyChatHistory);
+      socket.off("lobby:chat:message", onLobbyChatMessage);
       socket.off("room:closed", onRoomClosed);
       socket.off("room:kicked", onKicked);
       socket.off("room:chat:message", onChatMessage);
@@ -462,6 +493,13 @@ export function SocketProvider({
     [emit],
   );
 
+  const sendLobbyChatMessage = useCallback(
+    async (playerId: string, playerName: string, text: string) => {
+      await emit("lobby:chat:send", { playerId, playerName, text });
+    },
+    [emit],
+  );
+
   const setChatMuted = useCallback(
     async (
       roomId: string,
@@ -505,7 +543,9 @@ export function SocketProvider({
     draftAction,
     recordWinner,
     chatMessages,
+    lobbyChatMessages,
     sendChatMessage,
+    sendLobbyChatMessage,
     setChatMuted,
     clearError: () => setError(null),
   };
