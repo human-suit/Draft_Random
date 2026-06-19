@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { getSocket } from "@shared/lib/socketClient";
+import { connectSocket, getSocket } from "@shared/lib/socketClient";
 import {
   CaptainRole,
   ChatMessage,
@@ -92,13 +92,18 @@ interface SocketContextValue {
 
 const SocketContext = createContext<SocketContextValue | null>(null);
 
-export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const socketRef = useRef(getSocket());
+export function SocketProvider({
+  children,
+  socketUrl: initialSocketUrl,
+}: {
+  children: React.ReactNode;
+  socketUrl: string;
+}) {
+  const [socketUrl, setSocketUrl] = useState(initialSocketUrl);
+  const socketRef = useRef<ReturnType<typeof connectSocket> | null>(null);
   const activeRoomIdRef = useRef<string | null>(null);
   const deletingLobbyRef = useRef(false);
-  const [connected, setConnected] = useState(
-    () => socketRef.current.connected,
-  );
+  const [connected, setConnected] = useState(false);
   const [room, setRoom] = useState<Room | null>(null);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -118,10 +123,34 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const socket = socketRef.current;
+    const isLocalDefault =
+      initialSocketUrl.includes("localhost") &&
+      typeof window !== "undefined" &&
+      window.location.hostname !== "localhost" &&
+      window.location.hostname !== "127.0.0.1";
+
+    if (!isLocalDefault) return;
+
+    fetch("/api/config")
+      .then((response) => response.json())
+      .then((data: { socketUrl?: string }) => {
+        if (data.socketUrl && !data.socketUrl.includes("localhost")) {
+          setSocketUrl(data.socketUrl);
+        }
+      })
+      .catch(() => {});
+  }, [initialSocketUrl]);
+
+  useEffect(() => {
+    const socket = connectSocket(socketUrl);
+    socketRef.current = socket;
 
     const onConnect = () => setConnected(true);
     const onDisconnect = () => setConnected(false);
+    const onConnectError = (err: Error) => {
+      console.error("Socket connect error:", err.message);
+      setConnected(false);
+    };
     const onRoomUpdated = (updated: Room) => {
       if (activeRoomIdRef.current === updated.id) {
         setRoom(updated);
@@ -151,6 +180,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
     socket.on("room:updated", onRoomUpdated);
     socket.on("lobby:updated", onLobbyUpdated);
     socket.on("room:closed", onRoomClosed);
@@ -164,18 +194,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
       socket.off("room:updated", onRoomUpdated);
       socket.off("lobby:updated", onLobbyUpdated);
       socket.off("room:closed", onRoomClosed);
       socket.off("room:kicked", onKicked);
       socket.off("room:chat:message", onChatMessage);
     };
-  }, [trackRoom]);
+  }, [trackRoom, socketUrl]);
 
   const emit = useCallback(
     <T,>(event: string, data?: unknown): Promise<T> =>
       new Promise((resolve, reject) => {
-        const socket = socketRef.current;
+        const socket = socketRef.current ?? getSocket();
         if (!socket?.connected) {
           reject(new Error("Нет соединения с сервером"));
           return;

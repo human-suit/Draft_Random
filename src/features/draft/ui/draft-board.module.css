@@ -781,4 +781,89 @@
   .poolBoard {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .board {
+    height: auto;
+    min-height: min(68dvh, 680px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .boardHeader {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .headerTeam:first-child,
+  .headerTeam:last-child {
+    text-align: center;
+    align-items: center;
+  }
+
+  .headerCenter {
+    min-width: 0;
+    order: -1;
+  }
+
+  .timer {
+    font-size: 1.35rem;
+  }
+
+  .poolBoard {
+    grid-template-columns: 1fr;
+  }
+
+  .portrait.sm {
+    width: 44px;
+  }
+
+  .portrait.md {
+    width: 56px;
+  }
+
+  .portrait.xl {
+    width: 68px;
+  }
+
+  .teamSlotPlaceholder {
+    width: 44px;
+    height: 64px;
+  }
+
+  .slotEmpty {
+    min-width: 44px;
+    font-size: 0.5rem;
+  }
+
+  .scoreBar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.45rem;
+  }
+
+  .scoreName {
+    max-width: 72px;
+    font-size: 0.65rem;
+  }
+
+  .scoreValue {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .board {
+    padding: 0.45rem;
+    border-radius: 10px;
+  }
+
+  .attrGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+  }
+
+  .attrHeader {
+    font-size: 0.55rem;
+  }
 }

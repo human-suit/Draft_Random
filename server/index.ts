@@ -6,6 +6,25 @@ import type { CaptainRole } from "../src/entities/room/model/types";
 
 const PORT = Number(process.env.PORT ?? process.env.SOCKET_PORT ?? 3002);
 
+function normalizeOrigin(url: string): string {
+  return url.trim().replace(/\/$/, "");
+}
+
+function getAllowedOrigins(): string[] {
+  const origins = new Set<string>();
+  const clientUrl = process.env.CLIENT_URL?.trim();
+  if (clientUrl) origins.add(normalizeOrigin(clientUrl));
+
+  for (const extra of process.env.CLIENT_URLS?.split(",") ?? []) {
+    const trimmed = extra.trim();
+    if (trimmed) origins.add(normalizeOrigin(trimmed));
+  }
+
+  return [...origins];
+}
+
+const allowedOrigins = getAllowedOrigins();
+
 const httpServer = createServer((req, res) => {
   if (req.url === "/health" || req.url === "/") {
     res.writeHead(200, { "Content-Type": "text/plain" });
@@ -18,7 +37,29 @@ const httpServer = createServer((req, res) => {
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL ?? "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const normalized = normalizeOrigin(origin);
+      if (
+        allowedOrigins.length === 0 &&
+        (normalized.startsWith("http://localhost:") ||
+          normalized.startsWith("http://127.0.0.1:"))
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(normalized)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     methods: ["GET", "POST"],
   },
 });
@@ -385,7 +426,11 @@ io.on("connection", (socket) => {
 });
 
 httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Socket server running on port ${PORT}`);
+  const corsLabel =
+    allowedOrigins.length > 0
+      ? allowedOrigins.join(", ")
+      : "localhost only";
+  console.log(`Socket server running on port ${PORT}, CORS: ${corsLabel}`);
 });
 
 setInterval(() => {

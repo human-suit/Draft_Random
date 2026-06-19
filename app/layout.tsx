@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "./providers";
+import { resolveSocketUrl } from "@shared/config/socket";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +19,14 @@ export const metadata: Metadata = {
   description: "Мультиплеерный драфт Dota 2 в режиме Captains Mode",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <Providers>{children}</Providers>
+        <Providers socketUrl={resolveSocketUrl()}>{children}</Providers>
       </body>
     </html>
   );

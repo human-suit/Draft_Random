@@ -40,10 +40,37 @@ npm run dev
 | `draft-random-web` | Next.js (фронт) |
 | `draft-random-socket` | Socket.IO (комнаты, драфт) |
 
-1. [Render Dashboard](https://dashboard.render.com) → **New → Blueprint**
-2. Подключи репозиторий **Draft_Random**
-3. После первого деплоя проверь `NEXT_PUBLIC_SOCKET_URL` у web-сервиса
-4. Если сокет не подключается — **Manual Deploy → Clear build cache & deploy**
+### Ручной деплой (без Blueprint)
+
+**1. Socket-сервис** `draft-random-socket`  
+Build: `npm install` · Start: `npm run start:socket` · Health: `/health`
+
+**2. Web-сервис** `draft-random-web`  
+Build: `npm install && npm run build` · Start: `npm run start`
+
+### Переменные окружения (обязательно)
+
+| Сервис | Переменная | Значение |
+|--------|------------|----------|
+| **web** | `SOCKET_SERVER_URL` | URL сокета, напр. `https://draft-random-socket.onrender.com` |
+| **web** | `NEXT_PUBLIC_SOCKET_URL` | тот же URL (для сборки) |
+| **socket** | `CLIENT_URL` | URL сайта, напр. `https://draft-random-web.onrender.com` |
+
+> Без слэша в конце URL. После смены env на **web** — **Manual Deploy → Clear build cache & deploy**.  
+> После смены `CLIENT_URL` на **socket** — **Manual Deploy**.
+
+### «Сервер офлайн» на Render
+
+1. Проверь `SOCKET_SERVER_URL` и `NEXT_PUBLIC_SOCKET_URL` у web-сервиса  
+2. Проверь `CLIENT_URL` у socket-сервиса (точный URL фронта)  
+3. Открой сокет в браузере: `https://…-socket.onrender.com/health` → должно быть `ok`  
+4. Пересобери web с очисткой кэша
+
+## CI/CD
+
+- **GitHub Actions** (`.github/workflows/ci.yml`) — typecheck + build на каждый push в `main`
+- **Render** — auto-deploy при push, если репозиторий подключён к сервисам
+- Опционально: Deploy Hooks в Render → GitHub Secrets `RENDER_DEPLOY_HOOK_WEB` / `RENDER_DEPLOY_HOOK_SOCKET`
 
 Репозиторий: https://github.com/human-suit/Draft_Random
 
