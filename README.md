@@ -45,6 +45,8 @@ npm run dev
 3. После первого деплоя проверь `NEXT_PUBLIC_SOCKET_URL` у web-сервиса
 4. Если сокет не подключается — **Manual Deploy → Clear build cache & deploy**
 
+Репозиторий: https://github.com/human-suit/Draft_Random
+
 ## Структура
 
 ```

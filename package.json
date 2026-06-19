@@ -10,7 +10,7 @@
     "dev:next": "next dev",
     "dev:socket": "tsx watch server/index.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "start:socket": "tsx server/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint"
